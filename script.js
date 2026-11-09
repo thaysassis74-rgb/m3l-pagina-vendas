@@ -138,3 +138,90 @@ document.addEventListener("DOMContentLoaded", () => {
   observer.observe(swingCard);
 
 });
+
+
+/* M3L · Scroll reveal progressivo, sem dependências externas.
+   Os elementos continuam visíveis caso JS/IntersectionObserver falhe. */
+(function () {
+  function initScrollEffects() {
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (motionPreference.matches || !('IntersectionObserver' in window)) return;
+
+    // Elementos já sinalizados no HTML + pontos de entrada das demais seções.
+    const effects = [
+      ['#premiacoes .awards-intro', 'up'],
+      ['#premiacoes .awards-showcase', 'left'],
+      ['#premiacoes .awards-explainer', 'right'],
+      ['#depoimentos .testimonial-video-card', 'up'],
+      ['#sobre .about-photo-wrap', 'left'],
+      ['#sobre .about-content', 'right'],
+      ['#conteudo-m3l .module-feature-copy', 'left'],
+      ['#conteudo-m3l .module-feature-art', 'right'],
+      ['#conteudo-m3l .module-subheading', 'up'],
+      ['#conteudo-m3l .module-scroller', 'up'],
+      ['#imprensa .press-phone-figure', 'right'],
+      ['#bonus .bonus-card', 'up'],
+      ['#oferta .guarantee-card', 'up'],
+      ['#faq .faq-item', 'up'],
+      ['.section-cta', 'up']
+    ];
+
+    effects.forEach(([selector, direction]) => {
+      document.querySelectorAll(selector).forEach(element => {
+        element.classList.add('reveal');
+        element.dataset.reveal = direction;
+      });
+    });
+
+    // Retardo discreto entre cards da mesma fileira, sem prender a rolagem.
+    [
+      ['#depoimentos .testimonial-video-card', 4, 85],
+      ['#para-quem .benefit-card', 2, 110],
+      ['#bonus .bonus-card', 3, 90],
+      ['#faq .faq-item', 5, 65]
+    ].forEach(([selector, columns, interval]) => {
+      document.querySelectorAll(selector).forEach((element, index) => {
+        element.style.setProperty('--reveal-delay', `${(index % columns) * interval}ms`);
+      });
+    });
+
+    const elements = Array.from(document.querySelectorAll('.reveal'));
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target); // Aparece uma vez; não pisca ao voltar.
+      });
+    }, {
+      threshold: 0.06,
+      rootMargin: '0px 0px -7% 0px'
+    });
+
+    // É ativado somente quando o observador já foi criado.
+    document.documentElement.classList.add('scroll-effects-ready');
+    elements.forEach(element => observer.observe(element));
+
+    // Caso a preferência seja alterada com o site aberto, revela tudo.
+    const revealWithoutMotion = () => {
+      if (!motionPreference.matches) return;
+      elements.forEach(element => {
+        element.classList.add('is-visible');
+        observer.unobserve(element);
+      });
+      document.documentElement.classList.remove('scroll-effects-ready');
+    };
+    if (motionPreference.addEventListener) {
+      motionPreference.addEventListener('change', revealWithoutMotion);
+    } else if (motionPreference.addListener) {
+      motionPreference.addListener(revealWithoutMotion);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initScrollEffects, { once: true });
+  } else {
+    initScrollEffects();
+  }
+})();

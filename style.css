@@ -1908,3 +1908,57 @@ h3{font-size:clamp(23px,2vw,30px)}
 }
 /* Os quatro depoimentos usam iframes oficiais, sem links externos próprios. */
 #depoimentos .testimonial-video-footer a {display:none!important}
+
+
+/* M3L · Scroll reveal progressivo (IntersectionObserver).
+   Sem a classe aplicada pelo JS, TODO o conteúdo permanece visível. */
+@media (prefers-reduced-motion: no-preference) {
+  html.scroll-effects-ready .reveal {
+    --reveal-offset-x: 0px;
+    --reveal-offset-y: 30px;
+    --reveal-scale: 1;
+    opacity: 0;
+    transform: translate3d(var(--reveal-offset-x), var(--reveal-offset-y), 0) scale(var(--reveal-scale));
+    transition-property: opacity, transform;
+    transition-duration: 740ms, 820ms;
+    transition-timing-function: ease, cubic-bezier(.2,.72,.19,1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  /* Preserva a transição luminosa original do bônus Swing Trade. */
+  html.scroll-effects-ready .bonus-card--swing.reveal {
+    transition-property: opacity, transform, border-color, box-shadow;
+    transition-duration: 740ms, 820ms, 500ms, 500ms;
+    transition-timing-function: ease, cubic-bezier(.2,.72,.19,1), ease, ease;
+    transition-delay: var(--reveal-delay, 0ms), var(--reveal-delay, 0ms), 0ms, 0ms;
+  }
+  html.scroll-effects-ready .reveal[data-reveal="left"] {
+    --reveal-offset-x: -38px;
+    --reveal-offset-y: 0px;
+  }
+  html.scroll-effects-ready .reveal[data-reveal="right"] {
+    --reveal-offset-x: 38px;
+    --reveal-offset-y: 0px;
+  }
+  html.scroll-effects-ready .reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  @media (max-width: 760px) {
+    html.scroll-effects-ready .reveal {
+      --reveal-offset-y: 22px;
+      transition-duration: 610ms, 690ms;
+    }
+    html.scroll-effects-ready .reveal[data-reveal="left"],
+    html.scroll-effects-ready .reveal[data-reveal="right"] {
+      --reveal-offset-x: 0px;
+      --reveal-offset-y: 22px;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.scroll-effects-ready .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
